@@ -1,0 +1,7 @@
+.git
+.github
+docs
+*.db
+*.db-wal
+*.db-shm
+/dieyet

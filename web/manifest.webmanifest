@@ -1,0 +1,11 @@
+{
+  "name": "dieyet",
+  "short_name": "dieyet",
+  "description": "バーコードを読んで食べたものを記録する",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0f1115",
+  "theme_color": "#16a34a",
+  "icons": []
+}
