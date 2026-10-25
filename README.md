@@ -33,6 +33,7 @@ DIEYET_INSECURE_COOKIE=1 go run ./cmd/dieyet
 |---|---|---|
 | `DIEYET_ADDR` | `127.0.0.1:8080` | 待ち受けアドレス |
 | `DIEYET_DATABASE_URL` | （必須） | PostgreSQL の URL。例 `postgres://dieyet:secret@db.lan:5432/workout?sslmode=disable` |
+| `DIEYET_DATABASE_URL_FILE` | （空） | 上の URL を書いたファイルのパス。Docker secrets 向け。`DIEYET_DATABASE_URL` が空のときだけ読む |
 | `DIEYET_INSECURE_COOKIE` | （空） | `1` で Cookie の `Secure` を外す。開発専用 |
 | `DIEYET_OFF` | （有効） | `0` で Open Food Facts の照会を止める |
 | `DIEYET_PRUNE_IDLE_DAYS` | `0`（消さない） | 食事の記録が 1 件もないアカウントを N 日後に消す。`users` を他のアプリと共有するときは 0 のままにする |
@@ -53,12 +54,13 @@ DIEYET_TEST_DATABASE_URL='postgres://postgres:dev@127.0.0.1:5432/postgres?sslmod
 ### Docker
 
 ```sh
-docker build -t dieyet .
-docker run -d --name dieyet -p 127.0.0.1:8080:8080 \
-  -e DIEYET_DATABASE_URL='postgres://dieyet:secret@db.lan:5432/workout?sslmode=disable' dieyet
+cp .env.example .env   # DIEYET_DATABASE_URL に筋トレ管理アプリの PostgreSQL を入れる
+docker compose up -d --build
 ```
 
-`FROM scratch` のイメージで、中身はバイナリと CA 証明書だけ。
+`FROM scratch` のイメージで、中身はバイナリと CA 証明書だけ。読み取り専用・権限なしで動く。接続情報は `.env` に置き、コミットしない（`.gitignore` 済み）。Docker の secrets などでファイルから渡すなら `DIEYET_DATABASE_URL_FILE=/run/secrets/dieyet_db` のように指定する。ログには接続先のホストと DB 名だけ出し、パスワードは出さない。
+
+手元で PostgreSQL も一緒に立てるなら `docker compose --profile dev up -d --build`（`.env` の接続先を `postgres://postgres:dev@postgres:5432/postgres?sslmode=disable` にする）。
 
 ## 筋トレ管理アプリと共有するもの
 

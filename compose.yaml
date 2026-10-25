@@ -1,0 +1,29 @@
+# 本番（自宅の LXC）: docker compose up -d --build
+#   DB は筋トレ管理アプリの PostgreSQL。接続先は .env の DIEYET_DATABASE_URL
+# 開発: docker compose --profile dev up -d --build
+#   手元に PostgreSQL も立てる。.env の DIEYET_DATABASE_URL を
+#   postgres://postgres:dev@postgres:5432/postgres?sslmode=disable にする
+services:
+  dieyet:
+    build: .
+    image: dieyet
+    restart: unless-stopped
+    env_file: .env
+    # Cloudflare Tunnel（cloudflared）からだけ届けばよいので、ホストのループバックに限定
+    ports:
+      - "127.0.0.1:8080:8080"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 256m
+
+  postgres:
+    profiles: [dev]
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_PASSWORD: dev
+    volumes:
+      - pgdata-dev:/var/lib/postgresql
+
+volumes:
+  pgdata-dev:

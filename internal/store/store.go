@@ -24,6 +24,10 @@ var migrationFS embed.FS
 // ErrNotFound is returned when a row does not exist or is not visible to the caller.
 var ErrNotFound = errors.New("not found")
 
+// ErrConnect wraps failures to reach the database, as opposed to migration
+// errors, so a caller can retry only the former while PostgreSQL boots.
+var ErrConnect = errors.New("connect to postgres")
+
 type Store struct {
 	db *sql.DB
 }
@@ -41,7 +45,7 @@ func Open(ctx context.Context, dsn string) (*Store, error) {
 	db.SetConnMaxLifetime(time.Hour)
 	if err := db.PingContext(ctx); err != nil {
 		db.Close()
-		return nil, fmt.Errorf("connect to postgres: %w", err)
+		return nil, fmt.Errorf("%w: %v", ErrConnect, err)
 	}
 	if err := migrate(ctx, db); err != nil {
 		db.Close()
