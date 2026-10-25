@@ -1,0 +1,7 @@
+zxing-wasm 3.1.6 (MIT) https://www.npmjs.com/package/zxing-wasm
+npm tarball integrity: sha512-mU7UNuvl+hOT+nlSOQTMHZ2tM8lRMsbjDIp5IO/+HmBl/FOq77q0OSZPJ3cm42A9c1MKU6Uve67FiGdkhsrT9g==
+copied: dist/es/reader/index.js -> es/reader/index.js, dist/es/share.js -> es/share.js, dist/reader/zxing_reader.wasm -> zxing_reader.wasm
+sha256:
+368838c01a37be49b8daa833c3d9d253950fd9c29b8c98b9092018c9fd43b03c  es/reader/index.js
+b595f0f4c1060b5e2a45aecf0331e576181dc281b168cb22e98f8db69d16457a  es/share.js
+5003fb4b88c4fbd1fd518a2fd8c8ad365c519e183a08c03a322dddfea3cea84e  zxing_reader.wasm

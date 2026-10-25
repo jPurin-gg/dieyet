@@ -1,0 +1,10 @@
+# built binary
+/dieyet
+
+# local database
+*.db
+*.db-wal
+*.db-shm
+
+# local config
+.env

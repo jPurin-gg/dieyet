@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#16a34a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="dieyet">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="stylesheet" href="/static/style.css">
+<title>dieyet</title>
+</head>
+<body>
+
+<!-- ログイン -->
+<section id="view-login" class="view" hidden>
+  <form id="login-form" class="card stack">
+    <h1>dieyet</h1>
+    <p class="muted">ニックネームと合言葉を入れてください。初めての組み合わせなら、新しく始まります。</p>
+    <label>ニックネーム
+      <input name="nickname" autocomplete="username" maxlength="30" required autocapitalize="off">
+    </label>
+    <label>合言葉
+      <input name="passphrase" type="password" autocomplete="current-password" minlength="4" maxlength="200" required>
+    </label>
+    <p class="muted small">合言葉は4文字以上。他で使っているパスワードは使わないでください。</p>
+    <button type="submit" class="primary">はじめる</button>
+    <p id="login-error" class="error" role="alert"></p>
+  </form>
+</section>
+
+<!-- 今日の記録 -->
+<section id="view-home" class="view" hidden>
+  <header class="bar">
+    <button id="day-prev" class="icon" aria-label="前の日">‹</button>
+    <button id="day-label" class="date" aria-label="今日に戻る"></button>
+    <button id="day-next" class="icon" aria-label="次の日">›</button>
+  </header>
+
+  <main class="stack">
+    <section class="card totals">
+      <div class="kcal"><b id="t-kcal">0</b><span>kcal</span><span id="t-kcal-unknown" class="unknown" hidden></span></div>
+      <dl>
+        <div><dt>たんぱく質</dt><dd><b id="t-protein">0</b>g<span id="t-protein-unknown" class="unknown" hidden></span></dd></div>
+        <div><dt>脂質</dt><dd><b id="t-fat">0</b>g<span id="t-fat-unknown" class="unknown" hidden></span></dd></div>
+        <div><dt>炭水化物</dt><dd><b id="t-carbs">0</b>g<span id="t-carbs-unknown" class="unknown" hidden></span></dd></div>
+        <div><dt>食塩相当量</dt><dd><b id="t-salt">0</b>g<span id="t-salt-unknown" class="unknown" hidden></span></dd></div>
+      </dl>
+      <p id="t-note" class="muted small" hidden>「？」は、栄養成分が不明な記録の数です。合計には入っていません。</p>
+    </section>
+
+    <section>
+      <h2>食べたもの</h2>
+      <ul id="entries" class="entries"></ul>
+      <p id="entries-empty" class="muted">まだ記録がありません</p>
+    </section>
+
+    <p class="muted small center"><span id="me-name"></span> · <button id="logout" class="link">ログアウト</button></p>
+  </main>
+
+  <footer class="actions">
+    <button id="go-scan" class="primary">📷 バーコードを読む</button>
+    <button id="go-manual" class="secondary">✍️ 手入力</button>
+  </footer>
+</section>
+
+<!-- スキャン -->
+<section id="view-scan" class="view scan" hidden>
+  <video id="scan-video" playsinline muted autoplay></video>
+  <div class="guide"></div>
+  <p id="scan-status" class="scan-status">カメラを起動しています…</p>
+  <button id="scan-close" class="icon close" aria-label="閉じる">✕</button>
+  <button id="scan-type" class="secondary scan-type">番号を手で入力</button>
+</section>
+
+<!-- 商品の登録・編集 -->
+<section id="view-product" class="view" hidden>
+  <form id="product-form" class="card stack">
+    <h2 id="product-title">商品を登録</h2>
+    <p id="product-note" class="muted small"></p>
+    <label>バーコード<input name="barcode" inputmode="numeric" pattern="\d{8}|\d{12,14}" required></label>
+    <label>商品名<input name="name" maxlength="200" required></label>
+    <label>メーカー<input name="brand" maxlength="200"></label>
+    <label>栄養成分の単位 <span class="muted small">（例: 1個、1袋 60g、100g）</span><input name="unit" maxlength="50" required placeholder="1個"></label>
+    <div class="grid">
+      <label>エネルギー (kcal)<input name="kcal" type="number" step="any" min="0" inputmode="decimal"></label>
+      <label>たんぱく質 (g)<input name="protein_g" type="number" step="any" min="0" inputmode="decimal"></label>
+      <label>脂質 (g)<input name="fat_g" type="number" step="any" min="0" inputmode="decimal"></label>
+      <label>炭水化物 (g)<input name="carbs_g" type="number" step="any" min="0" inputmode="decimal"></label>
+      <label>食塩相当量 (g)<input name="salt_g" type="number" step="any" min="0" inputmode="decimal"></label>
+    </div>
+    <p class="muted small">わからない項目は空欄のままで。空欄は「不明」として扱われ、0 にはなりません。</p>
+    <div class="row">
+      <button type="button" id="product-cancel" class="secondary">キャンセル</button>
+      <button type="submit" class="primary">保存して記録へ</button>
+    </div>
+    <p id="product-error" class="error" role="alert"></p>
+  </form>
+</section>
+
+<!-- 記録（量の入力） -->
+<section id="view-record" class="view" hidden>
+  <form id="record-form" class="card stack">
+    <h2 id="record-name"></h2>
+    <p id="record-sub" class="muted"></p>
+    <label>食べた量（<span id="record-unit"></span> × ）<input name="servings" type="number" step="any" min="0.01" max="100" value="1" inputmode="decimal" required></label>
+    <p id="record-preview" class="muted small"></p>
+    <div class="row">
+      <button type="button" id="record-cancel" class="secondary">キャンセル</button>
+      <button type="button" id="record-edit" class="secondary">商品を直す</button>
+      <button type="submit" class="primary">記録する</button>
+    </div>
+    <p id="record-error" class="error" role="alert"></p>
+  </form>
+</section>
+
+<!-- 手入力（バーコードなし） -->
+<section id="view-manual" class="view" hidden>
+  <form id="manual-form" class="card stack">
+    <h2>手入力で記録</h2>
+    <p class="muted small">学食や自炊など、バーコードのないもの用です。</p>
+    <label>名前<input name="name" maxlength="200" required placeholder="例: 学食のカレー"></label>
+    <label>単位<input name="unit" maxlength="50" placeholder="1食"></label>
+    <div class="grid">
+      <label>エネルギー (kcal)<input name="kcal" type="number" step="any" min="0" inputmode="decimal"></label>
+      <label>たんぱく質 (g)<input name="protein_g" type="number" step="any" min="0" inputmode="decimal"></label>
+      <label>脂質 (g)<input name="fat_g" type="number" step="any" min="0" inputmode="decimal"></label>
+      <label>炭水化物 (g)<input name="carbs_g" type="number" step="any" min="0" inputmode="decimal"></label>
+      <label>食塩相当量 (g)<input name="salt_g" type="number" step="any" min="0" inputmode="decimal"></label>
+      <label>食べた量（単位 ×）<input name="servings" type="number" step="any" min="0.01" max="100" value="1" inputmode="decimal" required></label>
+    </div>
+    <p class="muted small">わからない項目は空欄のままで。空欄は「不明」として扱われます。</p>
+    <div class="row">
+      <button type="button" id="manual-cancel" class="secondary">キャンセル</button>
+      <button type="submit" class="primary">記録する</button>
+    </div>
+    <p id="manual-error" class="error" role="alert"></p>
+  </form>
+</section>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script type="module" src="/static/app.js"></script>
+</body>
+</html>
